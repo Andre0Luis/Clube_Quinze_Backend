@@ -31,3 +31,24 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Environment Variables ###
+.env
+.env.local
+.env.production
+
+### Database Backups ###
+backups/
+*.sql
+*.sql.gz
+*.dump
+*.backup
+
+### Logs ###
+*.log
+logs/
+
+### OS ###
+.DS_Store
+Thumbs.db
+

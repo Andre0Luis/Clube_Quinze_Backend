@@ -4,7 +4,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.DecodingException;
 import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.time.Clock;
 import java.time.Instant;
@@ -23,7 +25,21 @@ public class JwtTokenProvider {
     public JwtTokenProvider(JwtProperties properties, Clock clock) {
         this.properties = properties;
         this.clock = clock;
-        this.signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(properties.getSecret()));
+        String secret = properties.getSecret();
+        byte[] keyBytes;
+        try {
+            keyBytes = Decoders.BASE64.decode(secret);
+        } catch (DecodingException | IllegalArgumentException ex) {
+            // secret is probably not Base64-encoded, use raw UTF-8 bytes
+            keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        }
+        // HS256 requires a key of at least 256 bits (32 bytes)
+        if (keyBytes.length < 32) {
+            throw new IllegalArgumentException(
+                    "JWT secret is too short for HS256 (" + keyBytes.length + " bytes). " +
+                    "Provide a base64-encoded 32+ byte secret or a plain secret with at least 32 characters.");
+        }
+        this.signingKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateAccessToken(Long userId, String username, String role) {

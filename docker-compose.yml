@@ -22,8 +22,7 @@ services:
     build: .
     container_name: clube-quinze-api
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
     env_file:
       - .env.example
     ports:
@@ -32,8 +31,11 @@ services:
       DATABASE_URL: jdbc:postgresql://postgres:5432/clube_quinze
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
       SPRING_PROFILES_ACTIVE: prod
-    command: ["sh", "-c", "java -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:-prod} -jar /app/app.jar"]
+    restart: on-failure
 
 volumes:
   postgres_data:
+  # maven_cache: # opcional: habilite se quiser acelerar builds locais montando ~/.m2
